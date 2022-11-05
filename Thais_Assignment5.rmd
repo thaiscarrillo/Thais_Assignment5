@@ -1,0 +1,124 @@
+---
+title: "Assignment 5"
+output: html_notebook
+---
+
+# load packages
+```{r}
+library(tidyverse)
+library(ggthemes)
+library(ggplot2)
+library(rstatix)
+library(ggpubr)
+library(datarium)
+```
+# import data
+```{r}
+assignment5 = read_csv("assignment5_data.csv")
+```
+# Question 2
+```{r}
+subject_rt = assignment5 %>%
+  group_by(subject, prime_condition) %>% 
+  summarise(subject_rt = mean(response_RT))
+    
+subject_accuracy = assignment5 %>%
+  group_by(subject, prime_condition) %>%
+  summarise(subject_accuracy = mean(accuracy))
+```
+
+# Question 3
+Both subject_accuracy and subject_rt are in long format because each subject has multiple rows.
+
+# Question 4: wide
+```{r}
+subject_accuracy_wide = subject_accuracy %>%
+  pivot_wider(names_from = prime_condition, values_from = subject_accuracy)
+```
+
+# Question 5: long
+```{r}
+subject_accuracy_long = subject_accuracy_wide %>%
+  pivot_longer(names_to = "prime_condition", cols = both:unrelated)
+```
+
+# Question 6: Interpretation
+subject_accuracy has the same information as subject_accuracy_long
+
+# Question 7: t-test in R
+```{r}
+t.test(subject_accuracy_wide$phonological, subject_accuracy_wide$semantic, paired = TRUE)
+```
+
+# Question 8: t-test interpretation
+answer
+
+# Question 9: t-test manual
+```{r}
+x1_bar = mean(subject_accuracy_wide$phonological)
+x2_bar = mean(subject_accuracy_wide$semantic)
+
+s1 = sd(subject_accuracy_wide$phonological)
+s2 = sd(subject_accuracy_wide$semantic)
+
+n1 = nrow(subject_accuracy_wide)
+n2 = subject_accuracy_wide %>% pull(semantic) %>% length()
+```
+
+```{r}
+t_numerator = x1_bar - x2_bar
+inside_root1 = s1*s1/n1
+inside_root2 = s2*s2/n2
+t_denominator = sqrt(inside_root1 + inside_root2)
+t = t_numerator/t_denominator
+```
+
+
+```{r}
+x = s1*s1/n1
+y = s2*s2/n2
+
+a = s1*s1*s1*s1/(n1*n1*(n1-1))
+b = s2*s2*s2*s2/(n2*n2*(n2-1))
+
+deg = (x + y)*(x+y)/(a + b)
+
+p_value = 2*(1-pt(t,deg))
+```
+
+# Question 10: t-test outliers
+```{r}
+subject_accuracy_wide = subject_accuracy_wide %>%
+  mutate(diff = phonological - semantic)
+
+subject_accuracy_wide = subject_accuracy_wide %>% ungroup()
+outliers = subject_accuracy_wide %>% identify_outliers(diff)
+```
+There is one outlier.
+
+```{r}
+hist(subject_accuracy_wide$diff)
+```
+
+```{r}
+outlier_subs = outliers %>% pull(subject)
+
+newdf = subject_accuracy_wide %>% filter(!subject %in% outlier_subs)
+```
+
+# Question 11
+```{r}
+ggqqplot(subject_accuracy_wide, "diff")
+```
+
+```{r}
+subject_accuracy_wide %>% shapiro_test(diff)
+```
+The data does not significantly deviate from a normal distribution since the p-value was > 0.05. Normality is assumed.
+
+# Question 12
+The test of assumptions does not change my opinion on the validity of the t-test. Only one outlier was found but it was not extreme. Normality was assumed with the original data as well.
+```{r}
+
+```
+
