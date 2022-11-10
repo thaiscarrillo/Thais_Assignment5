@@ -51,7 +51,7 @@ t.test(subject_accuracy_wide$phonological, subject_accuracy_wide$semantic, paire
 ```
 
 # Question 8: t-test interpretation
-answer
+The paired t-test results indicate a significant difference between phonological and semantic accuracy.
 
 # Question 9: t-test manual
 ```{r}
@@ -117,8 +117,18 @@ subject_accuracy_wide %>% shapiro_test(diff)
 The data does not significantly deviate from a normal distribution since the p-value was > 0.05. Normality is assumed.
 
 # Question 12
-The test of assumptions does not change my opinion on the validity of the t-test. Only one outlier was found but it was not extreme. Normality was assumed with the original data as well.
+The test of assumptions does not change my opinion on the validity of the t-test. Only one outlier was found but it was not extreme. Normality was assumed with the original data as well. Participants were more accurate in the phonological condition than the semantic condition.
+
+# Question 13
 ```{r}
+mean_rt = subject_rt %>%
+  group_by(prime_condition) %>%
+  summarize(mean = mean(subject_rt))
 
+mean_rt %>%
+  ggplot(aes(x = prime_condition, y = mean))+
+  geom_col(position = "identity")+
+  theme_fivethirtyeight()+
+  labs(x = "prime_condition", y = "subject_rt", title = "Barplot of RT")
 ```
-
+This graph shows the semantic condition has the slowest reaction time and the both condition has the fastest reaction time. Nonetheless, the mean reaction times across conditions appear very similar.
